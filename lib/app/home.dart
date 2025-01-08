@@ -112,3 +112,30 @@ if(!empty($_GET['id']))
     echo json_encode($data);
 }
 ?>
+
+
+	
+    $p1 = $_FILES['doct1']['name'];
+    $p_tmp1 = $_FILES['doct1']['tmp_name'];
+    $path = "uploads/$p1";
+    $move = move_uploaded_file($p_tmp1, $path);
+  
+    $p2 = $_FILES['doct2']['name'];
+    $p_tmp2 = $_FILES['doct2']['tmp_name'];
+    $path = "uploads/$p2";
+    $move = move_uploaded_file($p_tmp2, $path);
+   
+    $p3 = $_FILES['doct3']['name'];
+    $p_tmp3 = $_FILES['doct3']['tmp_name'];
+    $path = "uploads/$p3";
+    $move = move_uploaded_file($p_tmp3, $path);
+  
+    $p4 = $_FILES['doct4']['name'];
+    $p_tmp4 = $_FILES['doct4']['tmp_name'];
+    $path = "uploads/$p4";
+    $move = move_uploaded_file($p_tmp4, $path);
+    if ($p1 != '') {
+    $sql = "insert into enquiry2 (cid,doct1,doct2,doct3,doct4) values('$cid','$p1','$p2','$p3','$p4')";
+    $result = mysqli_query($conn, $sql);
+    }
+  }
