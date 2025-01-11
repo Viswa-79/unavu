@@ -1,0 +1,280 @@
+<?php include "config.php"; ?>
+
+
+  <?php include "head.php"; ?>
+  <body>
+    <!-- Layout wrapper -->
+    <div class="layout-wrapper layout-content-navbar">
+      <div class="layout-container">
+        <!-- Menu -->
+        
+        <?php include "menu.php"; ?>
+        <!-- / Menu -->
+
+        <!-- Layout container -->
+        <div class="layout-page">
+          <!-- Navbar -->
+
+         <?php include "header.php"; ?>
+
+          
+     <!-- Content wrapper -->
+     <div class="content-wrapper">
+     <style>
+			  #myInput {
+				  border-radius: 10px;
+    background-image: url('/css/searchicon.png');
+	background-color: lavender; /* Add a search icon to input */
+    background-position: 10px 12px; /* Position the search icon */
+    background-repeat: no-repeat; /* Do not repeat the icon image */
+    width: 100%; /* Full-width */
+    font-size: 16px; /* Increase font-size */
+    padding: 12px 20px 12px 40px; /* Add some padding */
+    border: 1px solid #ddd; /* Add a grey border */
+    margin-bottom: 12px; /* Add some space below the input */
+}
+
+
+</style>
+
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+	  alert("hello");
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+});
+</script>
+<script>
+const myFunction = () => {
+  const trs = document.querySelectorAll('#myTable tr:not(.header)')
+  const filter = document.querySelector('#myInput').value
+  const regex = new RegExp(filter, 'i')
+  const isFoundInTds = td => regex.test(td.innerHTML)
+  const isFound = childrenArr => childrenArr.some(isFoundInTds)
+  const setTrStyleDisplay = ({ style, children }) => {
+    style.display = isFound([
+      ...children // <-- All columns
+    ]) ? '' : 'none' 
+  }
+  
+  trs.forEach(setTrStyleDisplay)
+}
+</script>
+
+
+            <?php
+   $date=date('Y-m-d');
+  //  $fromdate=$_POST['fromdate'];
+  //  $todate=$_POST['todate'];
+   $partyname=$_POST['partyname'];
+   $ordertype=$_POST['ordertype'];
+   $orderno=$_POST['orderno'];
+   $itemno=$_POST['itemno'];
+ 
+ ?>
+      
+            <div  class="container-xxl flex-grow-1 container-p-y">
+            <h1> <input type="text" id="myInput" onKeyUp="myFunction()" placeholder="Search for Anything..." style="width:100%;">
+            
+            </h1>
+              <div id="mydiv" class="card mb-4 ">
+                <div style=" text-align:center;padding:15px">
+                      <h3>Order Pending Report</h3>
+                     </div>
+                     <div class="card-header d-flex align-items-center justify-content-between"> 
+                     <h5 type="text">DATE : <?php echo date('d-m-Y',strtotime($date));
+?> </h5>
+</div>
+                <div class="card-body text-nowrap table-responsive" style="height:400px;">
+                <table  id="ConvertTable" class=" table table-bordered " style="border-collapse:collapse;font-size:14px;" border="1" >
+                <thead >
+                 
+                  <tr >
+                  <th >S.No</th>
+                  <th >Order&nbsp;No.</th>
+                  <th>Date</th>
+                  <th >Item&nbsp;No.</th>
+                  <th >Item&nbsp;Description</th>
+                  <th >Color</th>
+                  <th>Party&nbsp;Name</th>
+                  <th>Order&nbsp;Type</th>
+                  <th>Quality</th>
+                  <th>Quantity</th>
+                  <th >Price</th>
+                  <th>Shipment&nbsp;Date</th>
+                    <th>Payment&nbsp;terms</th>
+                    
+	</tr>
+                </thead>
+                <tbody id="myTable">
+                  <?php 
+                 $sno=1;
+
+                 $aa=array('partyname'=>$partyname,'ordertype'=>$ordertype,'ord_no'=>$orderno,'itemno'=>$itemno);
+                 $aa=array_filter($aa);
+                 
+                 //print_r($aa);
+                 
+                 $i=1;
+                 $rr='';
+                 foreach($aa as $key => $aa1)
+                 {
+                   if($i<count($aa))
+                   {
+                      $rq='and';
+                     }
+                   else
+                   {
+                    $rq='';	
+                   }
+                   $rr=$rr.' '.$key."="."'".$aa[$key]."'"." ".$rq;
+                 
+                   
+                 $i++;	
+                 }
+                 
+                 
+                   if($rr!='')
+                 
+                 { 
+                    
+                  $rr='and'.$rr;  
+                    
+                 }
+                   else
+                 
+                 { 
+                    
+                  $rr='';  
+                    
+                 } 
+                             
+
+                 $sql4 = " SELECT *,s.id as idn,s.currency as currency,c.color as color FROM order1 s left join order2 s1 on s.id=s1.cid left join partymaster m on s.partyname=m.id left join item_master a on s1.itemno=a.id left join color c on a.color=c.id where    quantity >= 0 and s1.ostatus!='1'  $rr   order by ord_no asc";
+                 $result4 = mysqli_query($conn, $sql4);
+                 while($wz1 = mysqli_fetch_array($result4))
+				 {
+                  $id= $wz1['idn'];
+                $qty = $wz1['quantity'];
+                $orderno = $wz1['ord_no'];
+                $itemno = $wz1['itemno'];
+
+
+                
+                 $sql1 = " SELECT * FROM currency where id='".$wz1['currency']."' ";
+                 $result1 = mysqli_query($conn, $sql1);
+                $woz = mysqli_fetch_array($result1);
+                $currency = $woz['currency'];
+
+                 $sql2 = " SELECT *,sum(quantity)as quantity FROM salesinvoice s left join salesinvoice1 s1 on s.id=s1.cid where s1.orderno='$orderno' and s1.itemno='$itemno'";
+                 $result2 = mysqli_query($conn, $sql2);
+                $wz2 = mysqli_fetch_array($result2);
+                  $qty1 = $qty - $wz2['quantity'];
+				
+				if($qty1>0){
+                     ?>
+                    <tr>
+               <td style="text-align:center"><?php echo $sno; ?></td>      
+               <td> <a <?php if ( $wz1['ordertype']!='Garments') { ?> href="order_confirm_upd.php?cid=<?php echo base64_encode($id);?>"<?php } else{?> href="garments_upd.php?cid=<?php echo base64_encode($id);?>"<?php } ?> target="blank" ><?php echo $wz1['ord_no']; ?></a></td>      
+               <td nowrap><?php echo date('d-m-Y',strtotime($wz1['date'])) ; ?></td>      
+               <td><div style="width:200px;"><?php echo $wz1['code']; ?></div></td>      
+               <td><div style="width:300px;"><?php echo $wz1['itemdesc']; ?></div></td>      
+               <td><div style="width:200px;"><?php echo $wz1['color']; ?></div></td>      
+               <td ><div style="width:200px;"><?php echo $wz1['name']; ?></div></td>      
+               <td><?php echo $wz1['ordertype']; ?></td>      
+               <td><div style="width:100px;"><?php echo $wz1['quality']; ?></div></td>      
+               <td  style="text-align:right;"><b><?php echo $qty1; ?></b></td>      
+               <td style="text-align:left"><?php echo $currency."<br>".$wz1['price']."/Pcs"; ?></td>      
+               <td><div style="width:200px;"><?php echo $wz1['shipment']; ?></div></td>      
+               <td><?php echo $wz1['payment']; ?></td>      
+               
+             
+               
+                  </tr>
+           
+             <?php $sno++;
+				}
+                 }
+             ?>
+            </tbody>
+</table> 
+
+                </div>
+              </div>            
+                  
+           
+            <div class="col-12">
+              
+<a href="ord_pending_report.php" class="btn btn-primary mt-4"><i class="ti ti-arrow-left me-sm-1 me-0"></i>Back</a>&nbsp;&nbsp;
+<button onclick="PrintElem('#mydiv')" class="btn btn-secondary mt-4" value="Print"><i class="ti ti-printer me-sm-1 me-0"></i>Print</button>&nbsp;&nbsp;
+
+<button onClick="tableToExcel('ConvertTable')" class="btn btn-warning mt-4" ><i class="ti ti-table me-sm-1 me-0"></i>Export to Excel<i class="ti ti-arrow-right me-sm-1 me-0"></i></button>
+           <!-- / Content -->
+
+          
+
+            <div class="content-backdrop fade"></div>
+          </div> </div>
+          <!-- Content wrapper -->
+        </div>
+         
+          
+    </div>
+    </div>
+    </div>
+      <!-- Overlay -->
+      <div class="layout-overlay layout-menu-toggle"></div>
+
+      <!-- Drag Target Area To SlideIn Menu On Small Screens -->
+      <div class="drag-target"></div>
+    
+    <!-- / Layout wrapper -->
+
+    <!-- Core JS -->
+    <!-- build:js assets/vendor/js/core.js -->
+<?php include "footer.php"; ?>
+  </body>
+
+<script src="jquery-1.4.4.min.js" type="text/javascript"></script>
+  <script type="text/javascript">
+var tableToExcel = (function() {
+  var uri = 'data:application/vnd.ms-excel;base64,'
+    , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><meta http-equiv="content-type" content="text/plain; charset=UTF-8"/></head><body><table>{table}</table></body></html>'
+    , base64 = function(s) { return window.btoa(unescape(encodeURIComponent(s))) }
+    , format = function(s, c) { return s.replace(/{(\w+)}/g, function(m, p) { return c[p]; }) }
+  return function(table, name) {
+    if (!table.nodeType) table = document.getElementById(table)
+    var ctx = {worksheet: name || 'Worksheet', table: table.innerHTML}
+   window.location.href = uri + base64(format(template, ctx))
+  }
+})()
+</script>  
+
+
+<script type="text/javascript">
+
+    function PrintElem(elem)
+    {
+		
+        Popup($(elem).html());
+    }
+
+    function Popup(data) 
+    {
+        var mywindow = window.open('', 'my div', 'height=500,width=900');
+        mywindow.document.write('<html><head><title></title>');
+        //mywindow.document.write('<link rel="stylesheet" href="tables.css" type="text/css" />');
+        mywindow.document.write('</head><body >');
+        mywindow.document.write(data);
+        mywindow.document.write('</body></html>');
+
+        mywindow.print();
+        mywindow.close();
+
+        return true;
+    }
+</script>
